@@ -1,0 +1,4 @@
+raspC
+*.o
+lib/libwebsockets/build/CMakeFiles/Progress/
+lib/*

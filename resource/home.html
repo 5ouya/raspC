@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <script src="jquery/jquery.js">
+    </script>
+    <script src="cookie/cookie.js">
+    </script>
+
+    <script src="bootstrap/bootstrap.min.js">
+    </script> 
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css">     
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="style.css" />     
+
+
+    <script type="text/javascript">
+        $(function() {
+
+            window.WebSocket = window.WebSocket || window.MozWebSocket;
+            
+            var websocket = new WebSocket('ws://192.168.1.6:7681',
+              'home');
+
+            var count_client =0;
+            
+            websocket.onopen = function () {
+                console.log('verbindung hergestellt');
+            };
+            
+            websocket.onerror = function () {
+                alert('socket fehler');
+            };
+
+            var sendObject = function(obj){
+                obj = JSON.stringify(obj,null,4);
+                websocket.send(obj);
+            }
+            
+            websocket.onmessage = function (message) {
+                var obj = JSON.parse(message.data);
+
+                for (var i = obj.length - 1; i >= 0; i--) {
+                    switch (obj[i].request) {
+                        case "count_client": 
+                        handleUser(obj[i]);
+                        break;
+                        case "start":
+                        handlestart(obj[i].data);
+                        $('.working').text('Services Status');
+                        console.log(obj[i].dat);
+                        break;                                           
+                    }
+                    console.log(obj);
+                }
+            }
+
+
+            var handlestart = function(obj){
+
+            }
+            var tmp_count_client=0;
+
+            var handleUser=function(obj){
+
+                var tmp_user;
+                tmp_user=$.trim(obj.user_changed);
+
+
+                var user_info = $.grep(obj.users,function (element,index) {
+                 return $.trim($.cookie("session_id").substring(24))==$.trim(element.id);
+             });
+
+                if($.trim($('.user-name').text())==""){
+                    $('.user-name').text(user_info[0].user);
+                }    
+
+                var other_users = $.grep(obj.users,function (element,index) {
+                 return $.trim($.cookie("session_id").substring(24))!=$.trim(element.id);
+             });
+
+                $('.other_users ul').empty();
+                for (var i = other_users.length - 1; i >= 0; i--) {
+                   var user=$.trim(other_users[i].user);
+                   $('.other_users ul').append("<li>"+ user +"</li>");
+               } 
+
+
+               if(obj.data>tmp_count_client){
+                $('.notifications p').text(tmp_user+" has been connected");
+                $('.notifications').show();
+            }else{
+                $('.notifications p').text(tmp_user+" has been disconnected");
+                $('.notifications').show();
+            }
+            setTimeout(function() {
+                $('.notifications').hide();
+            },1800);
+
+            tmp_count_client=obj.data;
+        }
+        
+    });
+</script>
+</head>
+<body>
+    <nav role="navigation" class="navbar container">
+        <div class="row navbar-inverse">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header" styles="position:relative;">
+                <button data-target="#bs-example-navbar-collapse-1" data-toggle="collapse" class="navbar-toggle" type="button">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="/" class="navbar-brand">Home</a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div id="bs-example-navbar-collapse-1" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a href="/details.html">Details</a>
+                    </li>
+                    <li>
+                        <a href="/services.html">Services</a>
+                    </li>
+                    <li>
+                        <a href="/gpio.html">GPIO</a>
+                    </li>
+                </ul>
+                <!-- user info -->
+                <div  class="user-area pull-right">
+                    <p data-target="#user-info" data-toggle="collapse" class="user-name"></p>
+                    <div id="user-info" class="collapse">
+                        <ul class="user-action">
+                            <li class="logout">
+                                Logout
+                            </li>
+                        </ul>
+                        <div class="other_users">
+                            
+                            <h5>Loged users</h5>
+                            <ul>
+                                <!-- html code fron java.js -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.user-info -->                
+            </div>
+            <!-- /.navbar-collapse -->
+
+            
+        </div>
+        <!-- /.container -->
+    </nav> 
+    <!--notifications -->
+    <div class="container">
+        <div class="row">
+            <div class="notifications">
+                <div class="alert alert-info">
+                    <p></p>
+                </div>
+            </div>     
+        </div>       
+    </div>  
+    <!-- breadcrumb-->
+    <div class="container">
+        <div class="row">
+            <ol class="breadcrumb">
+                <li><a href="/home.html">Home</a></li>                
+            </ol>     
+        </div>       
+    </div>    
+    <div class="container">
+
+        <div class="row">
+            <h3> Information</h3>
+            <div class="col-md-4">
+                <div class="box home">
+                    <h4>Network</h4>
+                    <p><i class="fa fa-globe"></i> Network <span><i class="fa fa-check"></i></span></p>
+                    <p><i class="fa fa-home"></i> IP adresse :<span><i></i></span></p>
+                    <p><i class="fa fa-map-marker"></i>  Local <span class="lcoal-ip">192.168.1.2</span></p>
+                    <p><i class="fa fa-globe"></i> Global <span class="globale-ip">133.56.45.3</span></p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="box home">
+                    <h4>Hardware</h4>
+                    <p><i class="fa fa-server"></i> CPU <span><i class="fa fa-check"></i></span></p>
+                    <p><i class="fa fa-asterisk"></i> RAM <span><i class="fa fa-check"></i></span></p>
+                    <p><i class="fa fa-refresh"></i> SWAP <span><i class="fa fa-check"></i></span></p>
+                    <p><i class="fa fa-fire"></i> CPU <span><i class="fa fa-check"></i></span></p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="box home">
+                    <h4> System</h4>
+                    <p><i class="fa fa-bars"></i> Hostname <span class="hostname">RaspberryPi</span></p>
+                    <p><i class="fa fa-info"></i> OS <span class="os"> Raspian jessie</span> </p>
+                    <p><i class="fa fa-user"></i> Users <span class="users"> pi</span> </p>                    
+                </div>
+            </div>                
+        </div>
+
+    </div>
+</body>
+</html>
