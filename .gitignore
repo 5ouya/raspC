@@ -1,4 +1,8 @@
 raspC
 *.o
+<<<<<<< HEAD
 lib/libwebsockets/build/CMakeFiles/Progress/
 lib/*
+=======
+lib/*
+>>>>>>> 5bee66cef24919d009b251ddad1dcc7c8f82e9e4
